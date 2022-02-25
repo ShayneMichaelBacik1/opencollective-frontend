@@ -289,7 +289,7 @@ ExpenseItemForm.propTypes = {
   /** For multi-currency expenses: called when the expense's currency changes */
   onCurrencyChange: PropTypes.func.isRequired,
   /** For multi-currency expenses */
-  availableCurrencies: PropTypes.arrayOf(PropTypes.string),
+  availableCurrencies: PropTypes.object,
   /** the attachment data */
   attachment: PropTypes.shape({
     id: PropTypes.string,

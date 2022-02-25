@@ -633,7 +633,7 @@ class EditCollectiveForm extends React.Component {
 
     const isEvent = collective.type === EVENT;
     const isUser = collective.type === USER;
-    const currencyOptions = Currency.map(c => ({ value: c, label: c }));
+    const currencyOptions = Object.keys(Currency).map(key => ({ value: key, label: key }));
     const submitBtnLabel = this.messages[submitBtnMessageId] && intl.formatMessage(this.messages[submitBtnMessageId]);
 
     const type = collective.type.toLowerCase();

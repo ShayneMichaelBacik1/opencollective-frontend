@@ -5,7 +5,7 @@ import { FormattedMessage, injectIntl } from 'react-intl';
 import { v4 as uuid } from 'uuid';
 
 import hasFeature, { FEATURES } from '../../lib/allowed-features';
-import { PayPalSupportedCurrencies } from '../../lib/constants/currency';
+import { Currency, PayPalSupportedCurrencies } from '../../lib/constants/currency';
 import expenseTypes from '../../lib/constants/expenseTypes';
 import { PayoutMethodType } from '../../lib/constants/payout-method';
 import { toIsoDateStr } from '../../lib/date-utils';
@@ -130,7 +130,7 @@ class ExpenseFormItems extends React.PureComponent {
       !hasFeature(collective, FEATURES.MULTI_CURRENCY_EXPENSES) &&
       !hasFeature(collective.host, FEATURES.MULTI_CURRENCY_EXPENSES)
     ) {
-      return [collective.currency];
+      return Currency[collective.currency];
     }
 
     const { payoutMethod, currency } = form.values;
@@ -138,7 +138,7 @@ class ExpenseFormItems extends React.PureComponent {
     if (isPayPal) {
       return PayPalSupportedCurrencies;
     } else {
-      return uniq(
+      const currencies = uniq(
         [
           currency,
           collective.currency,
@@ -147,6 +147,9 @@ class ExpenseFormItems extends React.PureComponent {
           payoutMethod?.data?.currency,
         ].filter(Boolean),
       );
+      const currencyOptions = {};
+      currencies.forEach(value => (currencyOptions[value] = Currency[value]));
+      return currencyOptions;
     }
   };
 
@@ -201,7 +204,7 @@ class ExpenseFormItems extends React.PureComponent {
             onUploadError={e => this.setState({ uploadErrors: [e] })}
             isOptional={values.payee?.isInvite}
             editOnlyDescriptiveInfo={isCreditCardCharge}
-            hasMultiCurrency={!index && availableCurrencies?.length > 1} // Only display currency picker for the first item
+            hasMultiCurrency={!index && Object.keys(availableCurrencies)?.length > 1} // Only display currency picker for the first item
             availableCurrencies={availableCurrencies}
             onCurrencyChange={this.onCurrencyChange}
           />

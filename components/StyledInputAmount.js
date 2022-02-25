@@ -1,15 +1,17 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { isNil, isUndefined } from 'lodash';
+import CurrencyFlag from 'react-currency-flags';
 import { useIntl } from 'react-intl';
 
 import { Currency } from '../lib/constants/currency';
 import { floatAmountToCents, getCurrencySymbol } from '../lib/currency-utils';
 
 import Container from './Container';
-import { Box } from './Grid';
+import { Box, Flex } from './Grid';
 import StyledInputGroup from './StyledInputGroup';
 import StyledSelect from './StyledSelect';
+import { Span } from './Text';
 
 const formatCurrencyName = (currency, currencyDisplay) => {
   if (currencyDisplay === 'SYMBOL') {
@@ -43,21 +45,59 @@ const getError = (curVal, minAmount, required) => {
   return Boolean((required && isNil(curVal)) || (minAmount && curVal < minAmount));
 };
 
+const generateCurrencyOptions = availableCurrencies => {
+  return Object.keys(availableCurrencies).map(key => {
+    const availableCurrency = availableCurrencies[key];
+    return {
+      value: key,
+      label: (
+        <Flex fontSize="14px" lineHeight="20px" fontWeight="500" title={availableCurrency.fullName}>
+          <Span>
+            <CurrencyFlag currency={key} size="sm" />
+          </Span>
+          &nbsp;
+          <Span whiteSpace="nowrap" ml={1}>
+            <Span color="black.800">{key}</Span>
+            {` `}
+            <Span color="black.500">({availableCurrency.fullName})</Span>
+          </Span>
+        </Flex>
+      ),
+    };
+  });
+};
+
+const getSelectedCurrency = value => {
+  return (
+    <Box>
+      <CurrencyFlag currency={value} size="sm" />
+      &nbsp;
+      <Span color="black.800">{value}</Span>
+    </Box>
+  );
+};
+
 const CurrencyPicker = ({ availableCurrencies, value, onChange }) => {
   const intl = useIntl();
+  const currencyOptions = generateCurrencyOptions(availableCurrencies);
+  const selectedCurrency = getSelectedCurrency(value);
   return (
     <StyledSelect
+      inputId="currency-picker"
       placeholder={intl.formatMessage({ id: 'Currency', defaultMessage: 'Currency' })}
-      isSearchable={availableCurrencies.length > 10}
-      options={availableCurrencies.map(value => ({ label: value, value }))}
-      value={!value ? null : { value, label: <Box minWidth={200}>{value}</Box> }}
-      width={90}
+      isSearchable={Object.keys(availableCurrencies)?.length > 10}
+      options={currencyOptions}
+      value={!value ? null : { value, label: <Box minWidth={200}>{selectedCurrency}</Box> }}
+      width={100}
       onChange={({ value }) => onChange(value)}
       onInputChange={inputValue => (inputValue.length <= 3 ? inputValue : inputValue.substr(0, 3))} // Limit search length to 3 characters
       styles={{
         control: {
           border: 'none',
           background: '#F7F8FA',
+        },
+        menu: {
+          width: '260px',
         },
       }}
     />
@@ -66,7 +106,7 @@ const CurrencyPicker = ({ availableCurrencies, value, onChange }) => {
 
 CurrencyPicker.propTypes = {
   /** A list of currencies presented in the currency picker */
-  availableCurrencies: PropTypes.arrayOf(PropTypes.string).isRequired,
+  availableCurrencies: PropTypes.object.isRequired,
   onChange: PropTypes.func.isRequired,
   value: PropTypes.string,
 };
@@ -187,7 +227,7 @@ StyledInputAmount.propTypes = {
   /** To enable the currency picker */
   hasCurrencyPicker: PropTypes.bool,
   /** A list of currencies presented in the currency picker */
-  availableCurrencies: PropTypes.arrayOf(PropTypes.string),
+  availableCurrencies: PropTypes.object,
   /** Accept all PropTypes from `StyledInputGroup` */
   ...StyledInputGroup.propTypes,
 };
